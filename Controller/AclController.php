@@ -204,6 +204,9 @@ class AclController extends AclManagerAppController {
 	 * Sets the missing AROs in the database
 	 */
 	public function update_aros() {
+	
+		// Debug off to enable redirect
+		Configure::write('debug', 0);
 		
 		$count = 0;
 		$type = 'Aro';
