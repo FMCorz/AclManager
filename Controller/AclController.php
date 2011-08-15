@@ -87,10 +87,13 @@ class AclController extends AclManagerAppController {
 				foreach ($aros as $node => $perm) {
 					list($model, $id) = explode(':', $node);
 					$node = array('model' => $model, 'foreign_key' => $id);
-					if ($perm) { 
+					if ($perm == 'allow') {
 						$this->Acl->allow($node, $action);
 					}
-					else {
+					elseif ($perm == 'inherit') {
+						$this->Acl->inherit($node, $action);
+					}
+					elseif ($perm == 'deny') {
 						$this->Acl->deny($node, $action);
 					}
 				}
@@ -105,16 +108,17 @@ class AclController extends AclManagerAppController {
 
 		$Aro = $this->{$model};
 		$aros = $this->paginate($Aro->alias);
+		$permKeys = $this->_getKeys();
 		
 		/**
 		 * Build permissions info
 		 */
-		$acos = $this->Acl->Aco->find('all', array('order' => 'Aco.lft ASC', 'recursive' => 0));
+		$acos = $this->Acl->Aco->find('all', array('order' => 'Aco.lft ASC', 'recursive' => 1));
 		$perms = array();
 		$parents = array();
 		foreach ($acos as $key => $data) {
 			$aco =& $acos[$key];
-			$aco = array('Aco' => $data['Aco'], 'Action' => array());
+			$aco = array('Aco' => $data['Aco'], 'Aro' => $data['Aro'], 'Action' => array());
 			$id = $aco['Aco']['id'];
 			
 			// Generate path
@@ -128,8 +132,45 @@ class AclController extends AclManagerAppController {
 			// Fetching permissions per ARO
 			$acoNode = $aco['Action'];
 			foreach($aros as $aro) {
-				$aroNode = array('model' => $Aro->alias, 'foreign_key' => $aro[$Aro->alias]['id']);
-				$perms[str_replace('/', ':', $acoNode)][$Aro->alias . ":" . $aro[$Aro->alias]['id']] = $this->Acl->check($aroNode, $acoNode);
+				
+				$aroId = $aro[$Aro->alias]['id'];
+				
+				/**
+				 * Manually checking permission
+				 * Part of this logic comes from DbAcl::check()
+				 */
+				$permissions = array_shift(Set::extract($aco, "/Aro[model={$Aro->alias}][foreign_key=$aroId]/Permission/."));
+				$allowed = false;
+				$inherited = false;
+				$inheritedPerms = array();
+				$allowedPerms = array();
+
+				foreach ($permKeys as $key) {
+					if (!empty($permissions)) {
+						if ($permissions[$key] == -1) {
+							$allowed = false;
+							break;
+						} elseif ($permissions[$key] == 1) {
+							$allowedPerms[$key] = 1;
+						} elseif ($permissions[$key] == 0) {
+							$inheritedPerms[$key] = 0;
+						}
+					} else {
+						$inheritedPerms[$key] = 0;
+					}
+				}
+
+				// Has it been allowed or is it inherited?
+				if (count($allowedPerms) === count($permKeys)) {
+					$allowed = true;
+				} elseif (count($inheritedPerms) === count($permKeys)) {
+					$aroNode = array('model' => $Aro->alias, 'foreign_key' => $aroId);
+					$allowed = $this->Acl->check($aroNode, $acoNode);
+					$inherited = true;
+				}
+				
+				$perms[str_replace('/', ':', $acoNode)][$Aro->alias . ":" . $aroId . '-inherit'] = $inherited;
+				$perms[str_replace('/', ':', $acoNode)][$Aro->alias . ":" . $aroId] = $allowed;
 			}
 		}
 		
@@ -393,5 +434,21 @@ class AclController extends AclManagerAppController {
 		}
 
 		return $return;
+	}
+
+	/**
+	 * Returns permissions keys in Permission schema
+	 * @see DbAcl::_getKeys()
+	 */
+	protected function _getKeys() {
+		$keys = $this->Acl->Aro->Permission->schema();
+		$newKeys = array();
+		$keys = array_keys($keys);
+		foreach ($keys as $key) {
+			if (!in_array($key, array('id', 'aro_id', 'aco_id'))) {
+				$newKeys[] = $key;
+			}
+		}
+		return $newKeys;
 	}
 }
