@@ -166,6 +166,7 @@ class AclController extends AclManagerAppController {
 			
 			// Plugin
 			$aco = $this->_action(array('plugin' => $plugin), '/:plugin/');
+			$aco = substr($aco, 0, -1);		// Remove trailing slash
 			$newNode = $parentNode;
 			if ($plugin && !$newNode = $this->Acl->Aco->node($aco)) {
 				$newNode = $this->_buildAcoNode($plugin, $parentNode);
