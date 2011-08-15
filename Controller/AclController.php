@@ -9,7 +9,7 @@
  *
  * @author        Frédéric Massart - FMCorz.net
  * @copyright     Copyright 2011, Frédéric Massart
- * @link          http://github.com/FMCorz/Acl-Manager
+ * @link          http://github.com/FMCorz/AclManager
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
  
