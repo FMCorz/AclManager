@@ -16,6 +16,7 @@
 class AclController extends AclManagerAppController {
 
 	var $paginate = array();
+	protected $_authorizer = null;
 
 	/**
 	 * beforeFitler
@@ -261,17 +262,13 @@ class AclController extends AclManagerAppController {
 	}
 
 	/**
-	 * Generates the action to query
-	 * Copied and adapted from BaseAuthorize::action
+	 * Gets the action from Authorizer
 	 */
 	protected function _action($request = array(), $path = '/:plugin/:controller/:action') {
-		$request = array_merge(array('controller' => null, 'action' => null, 'plugin' => null), $request);
 		$plugin = empty($request['plugin']) ? null : Inflector::camelize($request['plugin']) . '/';
-		return str_replace(
-			array(':controller', ':action', ':plugin/'),
-			array(Inflector::camelize($request['controller']), $request['action'], $plugin),
-			$this->Auth->actionPath . $path
-		);
+		$request = array_merge(array('controller' => null, 'action' => null, 'plugin' => null), $request);
+		$authorizer = $this->_getAuthorizer();
+		return $authorizer->action($request, $path);
 	}
 
 	/**
@@ -325,6 +322,28 @@ class AclController extends AclManagerAppController {
 	}
 
 	/**
+	 * Gets the Authorizer object from Auth
+	 */
+	protected function _getAuthorizer() {
+		if (!is_null($this->_authorizer)) {
+			return $this->_authorizer;
+		}
+		$authorzeObjects = $this->Auth->_authorizeObjects;
+		foreach ($authorzeObjects as $object) {
+			if (!$object instanceOf ActionsAuthorize) {
+				continue;
+			}
+			$this->_authorizer = $object; 
+			break;
+		}
+		if (empty($this->_authorizer)) {
+			$this->Session->setFlash(__("ActionAuthorizer could not be found"));
+			$this->redirect($this->referer());
+		}
+		return $this->_authorizer;
+	}
+
+	/**
 	 * Returns all the controllers from Cake and Plugins
 	 * Will only browse loaded plugins
 	 *
@@ -367,4 +386,3 @@ class AclController extends AclManagerAppController {
 		return $return;
 	}
 }
-
