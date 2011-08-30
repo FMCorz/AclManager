@@ -263,6 +263,7 @@ class AclController extends AclManagerAppController {
 			foreach ($items as $item) {
 	
 				$item = $item[$Model->alias];
+				$Model->create();
 				$Model->id = $item['id'];
 				$node = $Model->node();
 				
