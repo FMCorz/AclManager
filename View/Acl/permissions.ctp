@@ -6,7 +6,7 @@
  | <?php echo $this->Paginator->numbers();?> |
 	<?php echo $this->Paginator->next(__('next') . ' >>', array(), null, array('class' => 'disabled'));?>
 </div>
-<?php echo $this->Form->create(); ?>
+<?php echo $this->Form->create('Perms'); ?>
 <table>
 	<tr>
 		<th>Action</th>
