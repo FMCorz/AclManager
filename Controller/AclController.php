@@ -15,7 +15,7 @@
  
 class AclController extends AclManagerAppController {
 
-	var $paginate = array();
+	public $paginate = array();
 	protected $_authorizer = null;
 
 	/**
@@ -187,6 +187,7 @@ class AclController extends AclManagerAppController {
 	public function update_acos() {
 		
 		$count = 0;
+		$knownAcos = $this->_getAcos();
 		
 		// Root node
 		$aco = $this->_action(array(), '');
@@ -194,6 +195,7 @@ class AclController extends AclManagerAppController {
 			$rootNode = $this->_buildAcoNode($aco, null);
 			$count++;
 		}
+		$knownAcos = $this->_removeActionFromAcos($knownAcos, $aco);
 		
 		// Loop around each controller and its actions
 		$allActions = $this->_getActions();
@@ -214,6 +216,7 @@ class AclController extends AclManagerAppController {
 				$count++;
 			}
 			$parentNode = $newNode;
+			$knownAcos = $this->_removeActionFromAcos($knownAcos, $aco);
 			
 			// Controller
 			$aco = $this->_action(array('controller' => $controller, 'plugin' => $plugin), '/:plugin/:controller');
@@ -222,6 +225,7 @@ class AclController extends AclManagerAppController {
 				$count++;
 			}
 			$parentNode = $newNode;
+			$knownAcos = $this->_removeActionFromAcos($knownAcos, $aco);
 
 			// Actions
 			foreach ($actions as $action) {
@@ -234,7 +238,14 @@ class AclController extends AclManagerAppController {
 					$this->_buildAcoNode($action, $parentNode);
 					$count++;
 				}
+				$knownAcos = $this->_removeActionFromAcos($knownAcos, $aco);
 			}
+		}
+
+		// Some ACOs are in the database but not in the controllers
+		if (count($knownAcos) > 0) {
+			$acoIds = Set::extract('/Aco/id', $knownAcos);
+			$this->Acl->Aco->deleteAll(array('Aco.id' => $acoIds));
 		}
 		
 		$this->Session->setFlash(sprintf(__("%d ACOs have been created/updated"), $count));
@@ -368,6 +379,28 @@ class AclController extends AclManagerAppController {
 	}
 
 	/**
+	 * Returns all the ACOs including their path
+	 */
+	protected function _getAcos() {
+		$acos = $this->Acl->Aco->find('all', array('order' => 'Aco.lft ASC', 'recursive' => -1));
+		$parents = array();
+		foreach ($acos as $key => $data) {
+			
+			$aco =& $acos[$key];
+			$id = $aco['Aco']['id'];
+			
+			// Generate path
+			if ($aco['Aco']['parent_id'] && isset($parents[$aco['Aco']['parent_id']])) {
+				$parents[$id] = $parents[$aco['Aco']['parent_id']] . '/' . $aco['Aco']['alias'];
+			} else {
+				$parents[$id] = $aco['Aco']['alias'];
+			}
+			$aco['Aco']['action'] = $parents[$id];
+		}
+		return $acos;
+	}
+
+	/**
 	 * Gets the Authorizer object from Auth
 	 */
 	protected function _getAuthorizer() {
@@ -452,4 +485,18 @@ class AclController extends AclManagerAppController {
 		}
 		return $newKeys;
 	}
+	
+	/**
+	 * Returns an array without the corresponding action
+	 */
+	protected function _removeActionFromAcos($acos, $action) {
+		foreach ($acos as $key => $aco) {
+			if ($aco['Aco']['action'] == $action) {
+				unset($acos[$key]);
+				break;
+			}
+		}
+		return $acos;
+	}
 }
+
