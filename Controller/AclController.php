@@ -276,7 +276,12 @@ class AclController extends AclManagerAppController {
 				$item = $item[$Model->alias];
 				$Model->create();
 				$Model->id = $item['id'];
-				$node = $Model->node();
+
+				try {
+					$node = $Model->node();
+				} catch (Exception $e) {
+					$node = false;
+				}
 				
 				// Node exists
 				if ($node) {
