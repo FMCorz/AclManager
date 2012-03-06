@@ -24,7 +24,7 @@ How to install
 
 ### 2. Configure Auth in your AppController
 
-    It should look something like this:
+It should look something like this:
 
 	var $components = array('Auth', 'Acl', 'Session');
 	
@@ -47,19 +47,25 @@ How to install
         return $this->Auth->loggedIn();
     }
 
-### 3. Download AclManager to the `app/Plugin` directory
+### 3. Download AclManager
 
-### 4. Configure the plugin, see `AclManager/Config/bootstrap.php`
+To the `app/Plugin` directory
+
+### 4. Configure the plugin
+
+See `AclManager/Config/bootstrap.php`
 
 AclManager.aros : write in there your requester models aliases (the order is important)
 
-### 5. Enable the plugin in `app/Config/bootstrap.php`
+### 5. Enable the plugin
+
+In `app/Config/bootstrap.php`
 
     CakePlugin::load('AclManager', array('bootstrap' => true));
 
 ### 6. Login with an existing user
 
-    The plugin conflicts with `$this->Auth->allow()`, do not use it. Just make sure that you are logged in.
+The plugin conflicts with `$this->Auth->allow()`, do not use it. Just make sure that you are logged in.
 
 ### 7. Access the plugin at `/acl_manager/acl`
 
