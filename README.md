@@ -24,7 +24,7 @@ How to install
 
 2. Configure Auth in your AppController
 
-It should look something like this:
+    It should look something like this:
 
 	var $components = array('Auth', 'Acl', 'Session');
 	
@@ -51,7 +51,7 @@ It should look something like this:
 
 4. Configure the plugin, see `AclManager/Config/bootstrap.php`
 
-AclManager.aros : write in there your requester models aliases (the order is important)
+    AclManager.aros : write in there your requester models aliases (the order is important)
 
 5. Enable the plugin in `app/Config/bootstrap.php`
 
@@ -65,3 +65,5 @@ AclManager.aros : write in there your requester models aliases (the order is imp
 7. Disable the authorizer Controller or uncomment `return false` in `AppController::isAuthorized()`
 
 8. You're done!
+
+Enjoy!
