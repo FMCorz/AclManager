@@ -17,12 +17,12 @@ Requirements
 How to install
 --------------
 
-1. Set up your Acl environment (see any tutorial)
+### 1. Set up your Acl environment (see any tutorial)
 
    * Install SQL tables through Cake Console
    * parentNode() method on your requester models
 
-2. Configure Auth in your AppController
+### 2. Configure Auth in your AppController
 
     It should look something like this:
 
@@ -47,23 +47,29 @@ How to install
         return $this->Auth->loggedIn();
     }
 
-3. Download AclManager to the `app/Plugin` directory
+### 3. Download AclManager to the `app/Plugin` directory
 
-4. Configure the plugin, see `AclManager/Config/bootstrap.php`
+### 4. Configure the plugin, see `AclManager/Config/bootstrap.php`
 
-    AclManager.aros : write in there your requester models aliases (the order is important)
+AclManager.aros : write in there your requester models aliases (the order is important)
 
-5. Enable the plugin in `app/Config/bootstrap.php`
+### 5. Enable the plugin in `app/Config/bootstrap.php`
 
     CakePlugin::load('AclManager', array('bootstrap' => true));
 
-6. Access the plugin at `/acl_manager/acl`
+### 6. Login with an existing user
+
+    The plugin conflicts with `$this->Auth->allow()`, do not use it. Just make sure that you are logged in.
+
+### 7. Access the plugin at `/acl_manager/acl`
 
    * Update your AROs and ACOs
-   * Set up your permissions (do not forget to enable your own public actions !)
+   * Set up your permissions (do not forget to enable your own public actions!)
    
-7. Disable the authorizer Controller or uncomment `return false` in `AppController::isAuthorized()`
+### 8. Disable the authorizer Controller
 
-8. You're done!
+Or uncomment `return false` in `AppController::isAuthorized()`
+
+### 9. You're done!
 
 Enjoy!
