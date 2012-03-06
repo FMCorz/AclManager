@@ -65,3 +65,5 @@ AclManager.aros : write in there your requester models aliases (the order is imp
 7. Disable the authorizer Controller or uncomment `return false` in `AppController::isAuthorized()`
 
 8. You're done!
+
+Enjoy!
