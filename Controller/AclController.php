@@ -83,7 +83,13 @@ class AclController extends AclManagerAppController {
 		if ($this->request->is('post') || $this->request->is('put')) {
 			$perms =  isset($this->request->data['Perms']) ? $this->request->data['Perms'] : array();
 			foreach ($perms as $aco => $aros) {
-				$action = str_replace(":", "/", $aco);
+				$action = str_replace(array(":","-"), array("/","."), $aco);
+				if(stristr($action,".")) {
+					list($model,$foreign_key) = explode(".",$action,2);
+					if($model != '' AND $foreign_key > 1) {
+						$action = array('model' => $model, 'foreign_key' => $foreign_key);
+					}
+				}
 				foreach ($aros as $node => $perm) {
 					list($model, $id) = explode(':', $node);
 					$node = array('model' => $model, 'foreign_key' => $id);
@@ -123,9 +129,17 @@ class AclController extends AclManagerAppController {
 			
 			// Generate path
 			if ($aco['Aco']['parent_id'] && isset($parents[$aco['Aco']['parent_id']])) {
-				$parents[$id] = $parents[$aco['Aco']['parent_id']] . '/' . $aco['Aco']['alias'];
+				if($aco['Aco']['alias'] == '') {
+					$parents[$id] = $parents[$aco['Aco']['parent_id']] . '/' . $aco['Aco']['model'].'.'.$aco['Aco']['foreign_key'];
+				} else {
+					$parents[$id] = $parents[$aco['Aco']['parent_id']] . '/' . $aco['Aco']['alias'];
+				}
 			} else {
-				$parents[$id] = $aco['Aco']['alias'];
+				if($aco['Aco']['alias'] == '') {
+					$parents[$id] = $aco['Aco']['model'].'.'.$aco['Aco']['foreign_key'];
+				} else {
+					$parents[$id] = $aco['Aco']['alias'];
+				}
 			}
 			$aco['Action'] = $parents[$id];
 
@@ -169,8 +183,8 @@ class AclController extends AclManagerAppController {
 					$inherited = true;
 				}
 				
-				$perms[str_replace('/', ':', $acoNode)][$Aro->alias . ":" . $aroId . '-inherit'] = $inherited;
-				$perms[str_replace('/', ':', $acoNode)][$Aro->alias . ":" . $aroId] = $allowed;
+				$perms[str_replace(array('/','.'), array(':','-'), $acoNode)][$Aro->alias . ":" . $aroId . '-inherit'] = $inherited;
+				$perms[str_replace(array('/','.'), array(':','-'), $acoNode)][$Aro->alias . ":" . $aroId] = $allowed;
 			}
 		}
 		

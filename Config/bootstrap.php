@@ -17,7 +17,7 @@
  * List of AROs (Class aliases)
  * Order is important! Parent to Children
  */
-Configure::write('AclManager.aros', array('Role', 'User'));
+Configure::write('AclManager.aros', array('UserGroup', 'Role', 'Group'));
 
 /**
  * Limit used to paginate AROs
@@ -31,7 +31,7 @@ Configure::write('AclManager.aros', array('Role', 'User'));
  * Set the prefix you would like to restrict the plugin to
  * @see Configure::read('Routing.prefixes')
  */
-// Configure::write('AclManager.prefix', 'admin');
+Configure::write('AclManager.prefix', 'admin');
 
 /**
  * Ugly identation?
