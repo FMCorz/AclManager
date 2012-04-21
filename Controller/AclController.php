@@ -133,7 +133,7 @@ class AclController extends AclManagerAppController {
 			$acoNode = $aco['Action'];
 			foreach($aros as $aro) {
 				
-				$aroId = $aro[$Aro->alias]['id'];
+				$aroId = $aro[$Aro->alias][$Aro->primaryKey];
 				
 				/**
 				 * Manually checking permission
