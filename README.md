@@ -1,8 +1,9 @@
 # AclManager for CakePHP 2.x
 
 This plugins allows you to easily manage your permissions in CakePHP 2.x through the Acl module.
+
 Features
-========
+--------
 
 * Managing permissions for each node
 * Updating Database with missing AROs (Users, Roles, ...)
@@ -79,3 +80,9 @@ Or uncomment `return false` in `AppController::isAuthorized()`
 ### 9. You're done!
 
 Enjoy!
+
+Licence
+-------
+
+Licensed under the MIT License 
+<http://www.opensource.org/licenses/mit-license.php>
