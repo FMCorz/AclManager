@@ -20,7 +20,11 @@ $uglyIdent = Configure::read('AclManager.uglyIdent');
 $lastIdent = null;
 foreach ($acos as $id => $aco) {
 	$action = $aco['Action'];
-	$alias = $aco['Aco']['alias'];
+	if($aco['Aco']['alias'] == '') {
+		$alias = $aco['Aco']['model'].'.'.$aco['Aco']['foreign_key'];
+	} else {
+		$alias = $aco['Aco']['alias'];
+	}
 	$ident = substr_count($action, '/');
 	if ($ident <= $lastIdent && !is_null($lastIdent)) {
 		for ($i = 0; $i <= ($lastIdent - $ident); $i++) {
@@ -32,11 +36,11 @@ foreach ($acos as $id => $aco) {
 	}
 	?><td><?php echo ($ident == 1 ? "<strong>" : "" ) . ($uglyIdent ? str_repeat("&nbsp;&nbsp;", $ident) : "") . h($alias) . ($ident == 1 ? "</strong>" : "" ); ?></td>
 	<?php foreach ($aros as $aro): 
-		$inherit = $this->Form->value("Perms." . str_replace("/", ":", $action) . ".{$aroAlias}:{$aro[$aroAlias]['id']}-inherit");
-		$allowed = $this->Form->value("Perms." . str_replace("/", ":", $action) . ".{$aroAlias}:{$aro[$aroAlias]['id']}"); 
+		$inherit = $this->Form->value("Perms." . str_replace(array("/","."), array(":","-"), $action) . ".{$aroAlias}:{$aro[$aroAlias]['id']}-inherit");
+		$allowed = $this->Form->value("Perms." . str_replace(array("/","."), array(":","-"), $action) . ".{$aroAlias}:{$aro[$aroAlias]['id']}"); 
 		$value = $inherit ? 'inherit' : null; 
 		$icon = $this->Html->image(($allowed ? 'test-pass-icon.png' : 'test-fail-icon.png')); ?>
-		<td><?php echo $icon . " " . $this->Form->select("Perms." . str_replace("/", ":", $action) . ".{$aroAlias}:{$aro[$aroAlias]['id']}", array(array('inherit' => __('Inherit'), 'allow' => __('Allow'), 'deny' => __('Deny'))), array('empty' => __('No change'), 'value' => $value)); ?></td>
+		<td><?php echo $icon . " " . $this->Form->select("Perms." . str_replace(array("/","."), array(":","-"), $action) . ".{$aroAlias}:{$aro[$aroAlias]['id']}", array(array('inherit' => __('Inherit'), 'allow' => __('Allow'), 'deny' => __('Deny'))), array('empty' => __('No change'), 'value' => $value)); ?></td>
 	<?php endforeach; ?>
 <?php 
 	$lastIdent = $ident;
