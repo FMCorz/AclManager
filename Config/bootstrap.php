@@ -55,7 +55,7 @@ Configure::write('AclManager.ignoreActions', array('isAuthorized'));
  * END OF USER SETTINGS
  */
 
-Configure::write("AclManager.version", "1.2.2");
+Configure::write("AclManager.version", "1.2.3");
 if (!is_array(Configure::read('AclManager.aros'))) {
 	Configure::write('AclManager.aros', array(Configure::read('AclManager.aros')));
 }
