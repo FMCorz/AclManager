@@ -139,7 +139,7 @@ class AclController extends AclManagerAppController {
 				 * Manually checking permission
 				 * Part of this logic comes from DbAcl::check()
 				 */
-				$permissions = Set::extract($aco, "/Aro[model={$Aro->alias}][foreign_key=$aroId]/Permission/.")
+				$permissions = Set::extract($aco, "/Aro[model={$Aro->alias}][foreign_key=$aroId]/Permission/.");
 				$permissions = array_shift($permissions);
 				$allowed = false;
 				$inherited = false;
