@@ -17,6 +17,7 @@ class AclController extends AclManagerAppController {
 
 	public $paginate = array();
 	protected $_authorizer = null;
+	protected $acos = array();
 
 	/**
 	 * beforeFitler
@@ -113,7 +114,7 @@ class AclController extends AclManagerAppController {
 		/**
 		 * Build permissions info
 		 */
-		$acos = $this->Acl->Aco->find('all', array('order' => 'Aco.lft ASC', 'recursive' => 1));
+		$this->acos = $acos = $this->Acl->Aco->find('all', array('order' => 'Aco.lft ASC', 'recursive' => 1));
 		$perms = array();
 		$parents = array();
 		foreach ($acos as $key => $data) {
@@ -132,53 +133,96 @@ class AclController extends AclManagerAppController {
 			// Fetching permissions per ARO
 			$acoNode = $aco['Action'];
 			foreach($aros as $aro) {
-				
 				$aroId = $aro[$Aro->alias][$Aro->primaryKey];
+				$evaluate = $this->_evaluate_permissions($permKeys, array('id' => $aroId, 'alias' => $Aro->alias), $aco, $key);
 				
-				/**
-				 * Manually checking permission
-				 * Part of this logic comes from DbAcl::check()
-				 */
-				$permissions = Set::extract($aco, "/Aro[model={$Aro->alias}][foreign_key=$aroId]/Permission/.");
-				$permissions = array_shift($permissions);
-				$allowed = false;
-				$inherited = false;
-				$inheritedPerms = array();
-				$allowedPerms = array();
-
-				foreach ($permKeys as $key) {
-					if (!empty($permissions)) {
-						if ($permissions[$key] == -1) {
-							$allowed = false;
-							break;
-						} elseif ($permissions[$key] == 1) {
-							$allowedPerms[$key] = 1;
-						} elseif ($permissions[$key] == 0) {
-							$inheritedPerms[$key] = 0;
-						}
-					} else {
-						$inheritedPerms[$key] = 0;
-					}
-				}
-
-				// Has it been allowed or is it inherited?
-				if (count($allowedPerms) === count($permKeys)) {
-					$allowed = true;
-				} elseif (count($inheritedPerms) === count($permKeys)) {
-					$aroNode = array('model' => $Aro->alias, 'foreign_key' => $aroId);
-					$allowed = $this->Acl->check($aroNode, $acoNode);
-					$inherited = true;
-				}
-				
-				$perms[str_replace('/', ':', $acoNode)][$Aro->alias . ":" . $aroId . '-inherit'] = $inherited;
-				$perms[str_replace('/', ':', $acoNode)][$Aro->alias . ":" . $aroId] = $allowed;
+				$perms[str_replace('/', ':', $acoNode)][$Aro->alias . ":" . $aroId . '-inherit'] = $evaluate['inherited'];
+				$perms[str_replace('/', ':', $acoNode)][$Aro->alias . ":" . $aroId] = $evaluate['allowed'];
 			}
 		}
-		
+
 		$this->request->data = array('Perms' => $perms);
 		$this->set('aroAlias', $Aro->alias);
 		$this->set('aroDisplayField', $Aro->displayField);
 		$this->set(compact('acos', 'aros'));
+	}
+	
+	/**
+	 * Recursive function to find permissions avoiding slow $this->Acl->check().
+	 */
+	private function _evaluate_permissions($permKeys, $aro, $aco, $aco_index) { 
+		$permissions = Set::extract("/Aro[model={$aro['alias']}][foreign_key={$aro['id']}]/Permission/.", $aco);
+		$permissions = array_shift($permissions);		
+		
+		$allowed = false;
+		$inherited = false;
+		$inheritedPerms = array();
+		$allowedPerms = array();
+		
+		/**
+		 * Manually checking permission
+		 * Part of this logic comes from DbAcl::check()
+		 */
+		foreach ($permKeys as $key) {
+			if (!empty($permissions)) {
+				if ($permissions[$key] == -1) {
+					$allowed = false;
+					break;
+				} elseif ($permissions[$key] == 1) {
+					$allowedPerms[$key] = 1;
+				} elseif ($permissions[$key] == 0) {
+					$inheritedPerms[$key] = 0;
+				}
+			} else {
+				$inheritedPerms[$key] = 0;
+			}
+		}
+		
+		if (count($allowedPerms) === count($permKeys)) {
+			$allowed = true;
+		} elseif (count($inheritedPerms) === count($permKeys)) {
+			if ($aco['Aco']['parent_id'] == null) {
+				$this->lookup +=1;
+				$acoNode = (isset($aco['Action'])) ? $aco['Action'] : null;
+				$aroNode = array('model' => $aro['alias'], 'foreign_key' => $aro['id']);
+				$allowed = $this->Acl->check($aroNode, $acoNode);
+				$this->acos[$aco_index]['evaluated'][$aro['id']] = array(
+					'allowed' => $allowed,
+					'inherited' => true
+				);
+			}
+			else {
+				/**
+				 * Do not use Set::extract here. First of all it is terribly slow, 
+				 * besides this we need the aco array index ($key) to cache are result.
+				 */
+				foreach ($this->acos as $key => $a) {
+					if ($a['Aco']['id'] == $aco['Aco']['parent_id']) {
+						$parent_aco = $a;
+						break;
+					}
+				}
+				// Return cached result if present
+				if (isset($parent_aco['evaluated'][$aro['id']])) {
+					return $parent_aco['evaluated'][$aro['id']];
+				}
+				
+				// Perform lookup of parent aco
+				$evaluate = $this->_evaluate_permissions($permKeys, $aro, $parent_aco, $key);
+				
+				// Store result in acos array so we need less recursion for the next lookup
+				$this->acos[$key]['evaluated'][$aro['id']] = $evaluate;
+				$this->acos[$key]['evaluated'][$aro['id']]['inherited'] = true;
+				
+				$allowed = $evaluate['allowed'];
+			}
+			$inherited = true;
+		}
+		
+		return array(
+			'allowed' => $allowed,
+			'inherited' => $inherited,
+		);
 	}
 
 	/**
@@ -294,6 +338,9 @@ class AclController extends AclManagerAppController {
 					
 					// Parent is incorrect
 					if ($parent != $node[0][$type]['parent_id']) {
+						// Remove Aro here, otherwise we've got duplicate Aros
+						// TODO: perhaps it would be nice to update the Aro with the correct parent
+						$this->Acl->Aro->delete($node[0][$type]['id']);
 						$node = null;
 					}
 				}
@@ -505,4 +552,3 @@ class AclController extends AclManagerAppController {
 		return $acos;
 	}
 }
-
