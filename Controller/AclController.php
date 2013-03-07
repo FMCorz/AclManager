@@ -376,7 +376,9 @@ class AclController extends AclManagerAppController {
 	 */
 	protected function _action($request = array(), $path = '/:plugin/:controller/:action') {
 		$plugin = empty($request['plugin']) ? null : Inflector::camelize($request['plugin']) . '/';
-		$request = array_merge(array('controller' => null, 'action' => null, 'plugin' => null), $request);
+		$params = array_merge(array('controller' => null, 'action' => null, 'plugin' => null), $request);
+		$request = new CakeRequest(null, false);
+		$request->addParams($params);	
 		$authorizer = $this->_getAuthorizer();
 		return $authorizer->action($request, $path);
 	}
