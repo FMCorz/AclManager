@@ -359,6 +359,10 @@ class AclController extends AclManagerAppController {
 						'foreign_key' => $Model->id
 					);
 					
+					if ($alias = Configure::read("AclManager.aro_aliases.{$Model->name}")) {
+						$data['alias'] = $item[$alias];
+					}
+					
 					// Creating ARO
 					$this->Acl->{$type}->create($data);
 					$this->Acl->{$type}->save();
