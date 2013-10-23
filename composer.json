@@ -1,5 +1,5 @@
 {
-    "name": "fmcorz/log-watcher",
+    "name": "fmcorz/acl-manager",
     "type": "cakephp-plugin",
     "description": "AclManager for CakePHP 2.x",
     "homepage": "http://github.com/FMCorz/AclManager",
