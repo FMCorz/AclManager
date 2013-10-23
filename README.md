@@ -2,55 +2,89 @@
 
 This plugins allows you to easily manage your permissions in CakePHP 2.x through the Acl module.
 
-Features
---------
+## Features
 
 * Managing permissions for each node
 * Updating Database with missing AROs (Users, Roles, ...)
 * Updating Database with missing ACOs (Controller actions)
 * Revoking all permissions
 
-Requirements
-------------
+## Requirements
 
 * CakePHP 2.x
 
-How to install
---------------
+## How to install
 
-### 1. Set up your Acl environment (see any tutorial)
+### 1. Set up your Acl environment
 
    * Install SQL tables through Cake Console
    * parentNode() method on your requester models
+   
+See: [CakePHP: Simple ACL Controlled Application](http://book.cakephp.org/2.0/en/tutorials-and-examples/simple-acl-controlled-application/simple-acl-controlled-application.html)
 
 ### 2. Configure Auth in your AppController
 
 It should look something like this:
 
-	var $components = array('Auth', 'Acl', 'Session');
+```php
+var $components = array('Auth', 'Acl', 'Session');
 	
-    function beforeFilter() {
-    	
-        //Configure AuthComponent
-        $this->Auth->authorize = array(
-        	'Controller',
-        	'Actions' => array('actionPath' => 'controllers')
-        );
-		$this->Auth->authenticate = array('Form' => array('fields' => array('username' => 'login', 'password' => 'password')));
-        $this->Auth->loginAction = array('controller' => 'users', 'action' => 'login', 'admin' => false, 'plugin' => false);
-        $this->Auth->logoutRedirect = array('controller' => 'users', 'action' => 'login', 'admin' => false, 'plugin' => false);
-        $this->Auth->loginRedirect = array('controller' => 'products', 'action' => 'index', 'admin' => false, 'plugin' => false);
-        
-    }
+function beforeFilter() {
+    //Configure AuthComponent
+    $this->Auth->authorize = array(
+        'Controller',
+        'Actions' => array('actionPath' => 'controllers')
+    );
+    $this->Auth->authenticate = array(
+    	'Form' => array(
+    	    'fields' => array(
+    	        'username' => 'login',
+    	        'password' => 'password'
+	        )
+        )
+	);
+    $this->Auth->loginAction = array(
+        'controller' => 'users',
+        'action' => 'login',
+        'admin' => false,
+        'plugin' => false
+    );
+    $this->Auth->logoutRedirect = array(
+        'controller' => 'users',
+        'action' => 'login',
+        'admin' => false,
+        'plugin' => false
+    );
+    $this->Auth->loginRedirect = array(
+        'controller' => 'products',
+        'action' => 'index',
+        'admin' => false,
+        'plugin' => false
+    );
+}
 
-    function isAuthorized($user) {
-        // return false;
-        return $this->Auth->loggedIn();
-    }
+function isAuthorized($user) {
+    // return false;
+    return $this->Auth->loggedIn();
+}
+```
 
 ### 3. Download AclManager
 
-To the `app/Plugin` directory
+#### manually
+
+Download the stable branch (https://github.com/FMCorz/AclManager/archive/stable.zip) and paste the contents in your `app/Plugin/` directory.
+
+#### With composer
+
+If you already have composer set up for your project, you can skipt to step 4
+
+ 1. `cd /my/project/location/app` The /app is important because that is where your `composer.json` is.
+ 2. add `"fmcorz/acl-manager": "stable"` to your `require` key in your `composer.json` file [docs](http://getcomposer.org/doc/01-basic-usage.md#the-require-key)
+ 3. [Install composer](http://getcomposer.org/doc/00-intro.md#locally)
+ 4. run `php composer.phar install` to install the plugin
+ 
+[Composer documentation](http://getcomposer.org/doc/)
 
 ### 4. Configure the plugin
 
