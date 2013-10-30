@@ -19,7 +19,7 @@ This plugins allows you to easily manage your permissions in CakePHP 2.x through
 
    * Install SQL tables through Cake Console
    * parentNode() method on your requester models
-   
+
 See: [CakePHP: Simple ACL Controlled Application](http://book.cakephp.org/2.0/en/tutorials-and-examples/simple-acl-controlled-application/simple-acl-controlled-application.html)
 
 ### 2. Configure Auth in your AppController
@@ -28,7 +28,7 @@ It should look something like this:
 
 ```php
 var $components = array('Auth', 'Acl', 'Session');
-	
+
 function beforeFilter() {
     //Configure AuthComponent
     $this->Auth->authorize = array(
@@ -36,13 +36,13 @@ function beforeFilter() {
         'Actions' => array('actionPath' => 'controllers')
     );
     $this->Auth->authenticate = array(
-    	'Form' => array(
-    	    'fields' => array(
-    	        'username' => 'login',
-    	        'password' => 'password'
-	        )
+        'Form' => array(
+            'fields' => array(
+                'username' => 'login',
+                'password' => 'password'
+            )
         )
-	);
+    );
     $this->Auth->loginAction = array(
         'controller' => 'users',
         'action' => 'login',
@@ -71,19 +71,16 @@ function isAuthorized($user) {
 
 ### 3. Download AclManager
 
-#### manually
+#### Manually
 
-Download the stable branch (https://github.com/FMCorz/AclManager/archive/stable.zip) and paste the contents in your `app/Plugin/` directory.
+Download the stable branch (https://github.com/FMCorz/AclManager/archive/stable.zip) and paste the content in your `app/Plugin/` directory.
 
-#### With composer
+#### With Composer
 
-If you already have composer set up for your project, you can skipt to step 4
+1. [Install composer](http://getcomposer.org/doc/00-intro.md#locally) in the `app/` folder of your project.
+2. Add `"fmcorz/acl-manager": "stable"` to your `require` key in your `composer.json` file. ([More about this](http://getcomposer.org/doc/01-basic-usage.md#the-require-key))
+3. Run `php composer.phar install` to install the plugin.
 
- 1. `cd /my/project/location/app` The /app is important because that is where your `composer.json` is.
- 2. add `"fmcorz/acl-manager": "stable"` to your `require` key in your `composer.json` file [docs](http://getcomposer.org/doc/01-basic-usage.md#the-require-key)
- 3. [Install composer](http://getcomposer.org/doc/00-intro.md#locally)
- 4. run `php composer.phar install` to install the plugin
- 
 [Composer documentation](http://getcomposer.org/doc/)
 
 ### 4. Configure the plugin
@@ -118,5 +115,4 @@ Enjoy!
 Licence
 -------
 
-Licensed under the MIT License 
-<http://www.opensource.org/licenses/mit-license.php>
+Licensed under the [MIT License](http://www.opensource.org/licenses/mit-license.php)
