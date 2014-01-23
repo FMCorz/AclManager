@@ -18,6 +18,7 @@
 <?php
 $uglyIdent = Configure::read('AclManager.uglyIdent'); 
 $lastIdent = null;
+$permissionGroup = 0;
 foreach ($acos as $id => $aco) {
 	$action = $aco['Action'];
 	$alias = $aco['Aco']['alias'];
@@ -27,16 +28,18 @@ foreach ($acos as $id => $aco) {
 			?></tr><?php
 		}
 	}
-	if ($ident != $lastIdent) {
-		?><tr class='aclmanager-ident-<?php echo $ident; ?>'><?php
+	
+	if ($ident == 1) {
+		$permissionGroup = $permissionGroup +1;
 	}
+	?><tr><?php
 	?><td><?php echo ($ident == 1 ? "<strong>" : "" ) . ($uglyIdent ? str_repeat("&nbsp;&nbsp;", $ident) : "") . h($alias) . ($ident == 1 ? "</strong>" : "" ); ?></td>
 	<?php foreach ($aros as $aro): 
 		$inherit = $this->Form->value("Perms." . str_replace("/", ":", $action) . ".{$aroAlias}:{$aro[$aroAlias]['id']}-inherit");
 		$allowed = $this->Form->value("Perms." . str_replace("/", ":", $action) . ".{$aroAlias}:{$aro[$aroAlias]['id']}"); 
 		$value = $inherit ? 'inherit' : null; 
 		$icon = $this->Html->image(($allowed ? 'test-pass-icon.png' : 'test-fail-icon.png')); ?>
-		<td><?php echo $icon . " " . $this->Form->select("Perms." . str_replace("/", ":", $action) . ".{$aroAlias}:{$aro[$aroAlias]['id']}", array(array('inherit' => __('Inherit'), 'allow' => __('Allow'), 'deny' => __('Deny'))), array('empty' => __('No change'), 'value' => $value)); ?></td>
+		<td data-level='<?php echo $ident; ?>'  data-controller='<?php echo "Perms" . str_replace("/", ":", $action) ; ?>'><?php echo $icon . " " . $this->Form->select("Perms." . str_replace("/", ":", $action) . ".{$aroAlias}:{$aro[$aroAlias]['id']}", array(array('inherit' => __('Inherit'), 'allow' => __('Allow'), 'deny' => __('Deny'))), array('empty' => __('No change'), 'value' => $value)); ?></td>
 	<?php endforeach; ?>
 <?php 
 	$lastIdent = $ident;
@@ -75,3 +78,6 @@ echo $this->Form->end(__("Save"));
 		<li><?php echo $this->Html->link(__('Drop permissions'), array('action' => 'drop_perms'), array(), __("Do you want to drop all the permissions?")); ?></li>
 	</ul>
 </div>
+
+<?php	echo	$this->Html->script('/AclManager/js/changePermissionsIcons.js'); ?>
+				
