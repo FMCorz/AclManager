@@ -16,7 +16,7 @@
 		<?php endforeach; ?>
 	</tr>
 <?php
-$uglyIdent = Configure::read('AclManager.uglyIdent'); 
+$uglyIdent = Configure::read('AclManager.uglyIdent');
 $lastIdent = null;
 foreach ($acos as $id => $aco) {
 	$action = $aco['Action'];
@@ -31,14 +31,15 @@ foreach ($acos as $id => $aco) {
 		?><tr class='aclmanager-ident-<?php echo $ident; ?>'><?php
 	}
 	?><td><?php echo ($ident == 1 ? "<strong>" : "" ) . ($uglyIdent ? str_repeat("&nbsp;&nbsp;", $ident) : "") . h($alias) . ($ident == 1 ? "</strong>" : "" ); ?></td>
-	<?php foreach ($aros as $aro): 
+	<?php foreach ($aros as $aro):
 		$inherit = $this->Form->value("Perms." . str_replace("/", ":", $action) . ".{$aroAlias}:{$aro[$aroAlias]['id']}-inherit");
-		$allowed = $this->Form->value("Perms." . str_replace("/", ":", $action) . ".{$aroAlias}:{$aro[$aroAlias]['id']}"); 
-		$value = $inherit ? 'inherit' : null; 
+		$allowed = $this->Form->value("Perms." . str_replace("/", ":", $action) . ".{$aroAlias}:{$aro[$aroAlias][$aroPk]}");
+		$value = $inherit ? 'inherit' : null;
 		$icon = $this->Html->image(($allowed ? 'test-pass-icon.png' : 'test-fail-icon.png')); ?>
-		<td><?php echo $icon . " " . $this->Form->select("Perms." . str_replace("/", ":", $action) . ".{$aroAlias}:{$aro[$aroAlias]['id']}", array(array('inherit' => __('Inherit'), 'allow' => __('Allow'), 'deny' => __('Deny'))), array('empty' => __('No change'), 'value' => $value)); ?></td>
+		$inherit = $this->Form->value("Perms." . str_replace("/", ":", $action) . ".{$aroAlias}:{$aro[$aroAlias][$aroPk]}-inherit");
+		<td><?php echo $icon . " " . $this->Form->select("Perms." . str_replace("/", ":", $action) . ".{$aroAlias}:{$aro[$aroAlias][$aroPk]}", array(array('inherit' => __('Inherit'), 'allow' => __('Allow'), 'deny' => __('Deny'))), array('empty' => __('No change'), 'value' => $value)); ?> </td>
 	<?php endforeach; ?>
-<?php 
+<?php
 	$lastIdent = $ident;
 }
 for ($i = 0; $i <= $lastIdent; $i++) {
@@ -57,7 +58,7 @@ echo $this->Form->end(__("Save"));
 </div>
 <div class="actions">
 	<h3><?php echo __('Manage for'); ?></h3>
-	<?php 
+	<?php
 	$aroModels = Configure::read("AclManager.aros");
 	if ($aroModels > 1): ?>
 		<ul><?php foreach ($aroModels as $aroModel): ?>
