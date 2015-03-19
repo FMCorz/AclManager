@@ -98,7 +98,10 @@ class AclController extends AclManagerAppController {
 						$this->Acl->deny($node, $action);
 					}
 				}
-			} 
+			}
+			
+			// remove cached acos file when updating permissions
+			Cache::delete('acos', Configure::read('AclManager.cacheConfig'));
 		}
 		
 		$model = isset($this->request->params['named']['aro']) ? $this->request->params['named']['aro'] : null;
@@ -114,7 +117,12 @@ class AclController extends AclManagerAppController {
 		/**
 		 * Build permissions info
 		 */
-		$this->acos = $acos = $this->Acl->Aco->find('all', array('order' => 'Aco.lft ASC', 'recursive' => 1));
+		$acos = Cache::read('acos', Configure::read('AclManager.cacheConfig'));
+		if (!$acos) {
+			$acos = $this->Acl->Aco->find('all', array('order' => 'Aco.lft ASC', 'recursive' => 1));
+			Cache::write('acos', $acos, Configure::read('AclManager.cacheConfig'));
+		}
+		$this->acos = $acos;
 		$perms = array();
 		$parents = array();
 		foreach ($acos as $key => $data) {
@@ -144,6 +152,7 @@ class AclController extends AclManagerAppController {
 		$this->request->data = array('Perms' => $perms);
 		$this->set('aroAlias', $Aro->alias);
 		$this->set('aroDisplayField', $Aro->displayField);
+		$this->set('aroList', array_values($this->{$Aro->alias}->find('list')));
 		$this->set(compact('acos', 'aros'));
 	}
 	
@@ -292,6 +301,9 @@ class AclController extends AclManagerAppController {
 			$acoIds = Set::extract('/Aco/id', $knownAcos);
 			$this->Acl->Aco->deleteAll(array('Aco.id' => $acoIds));
 		}
+		
+		// remove cached acos file when updating ACOs
+		Cache::delete('acos', Configure::read('AclManager.cacheConfig'));
 		
 		$this->Session->setFlash(sprintf(__("%d ACOs have been created/updated"), $count));
 		$this->redirect($this->request->referer());
