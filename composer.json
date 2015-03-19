@@ -1,0 +1,11 @@
+{
+    "name": "fmcorz/acl-manager",
+    "type": "cakephp-plugin",
+    "description": "AclManager for CakePHP 2.x",
+    "homepage": "http://github.com/FMCorz/AclManager",
+    "license": "MIT",
+    "require": {
+        "php": ">=5.2.8",
+        "composer/installers": "*"
+    }
+}
