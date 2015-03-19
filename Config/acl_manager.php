@@ -56,5 +56,5 @@ $config['AclManager'] = array(
 	 */
 	// 'models' => array('Group', 'Customer'),
 	
-	'version' => "1.2.4"
+	'version' => "1.2.5"
 );
