@@ -1,13 +1,33 @@
 <div class="form">
 <h3><?php echo sprintf(__("%s permissions"), $aroAlias); ?></h3>
-<p><?php echo $this->Paginator->counter(array('format' => __('Page %page% of %pages%, showing %current% records out of %count% total, starting on record %start%, ending on %end%'))); ?></p>
-<div class="paging">
-	<?php echo $this->Paginator->prev('<< ' . __('previous'), array(), null, array('class'=>'disabled'));?>
- | <?php echo $this->Paginator->numbers();?> |
-	<?php echo $this->Paginator->next(__('next') . ' >>', array(), null, array('class' => 'disabled'));?>
+
+<div class="row">
+	<div class="col-md-4">
+		<?php echo $this->Form->create('Page', array('default' => false));?>
+		<?php echo $this->Form->input('group_id', array('id' => 'AroSelector', 'div' => false, 'label' => 'Jump to...', 'options' => $aroList, 'empty' => $aroAlias, 'value' => isset($this->params['named']['page']) ? $this->params['named']['page'] -1 : ''));?>
+		<?php echo $this->Form->end(null);?>
+	</div>
+	
+	<div class="col-md-8">
+		<?php echo $this->Paginator->pagination(array(
+		     'modulus' => '4',
+		     'first_title' => '«',
+		     'last_title' => '»',
+		     'prev_title' => '‹ prev',
+		     'next_title' => 'next ›',
+		     'ul' => 'pagination pagination-sm pull-right',
+		));?>
+		
+		<p class="pagination pull-right text-right">
+		     <?php echo $this->Paginator->counter(
+		          '{:count} results, showing {:start} - {:end}'
+		     );?> &nbsp;
+		</p>
+	</div>
 </div>
+
 <?php echo $this->Form->create('Perms'); ?>
-<table>
+<table class="aclmanager-permissions">
 	<tr>
 		<th>Action</th>
 		<?php foreach ($aros as $aro): ?>
@@ -36,7 +56,21 @@ foreach ($acos as $id => $aco) {
 		$allowed = $this->Form->value("Perms." . str_replace("/", ":", $action) . ".{$aroAlias}:{$aro[$aroAlias]['id']}"); 
 		$value = $inherit ? 'inherit' : null; 
 		$icon = $this->Html->image(($allowed ? 'test-pass-icon.png' : 'test-fail-icon.png')); ?>
-		<td><?php echo $icon . " " . $this->Form->select("Perms." . str_replace("/", ":", $action) . ".{$aroAlias}:{$aro[$aroAlias]['id']}", array(array('inherit' => __('Inherit'), 'allow' => __('Allow'), 'deny' => __('Deny'))), array('empty' => __('No change'), 'value' => $value)); ?></td>
+		<td>
+			<?php echo $icon . " " . $this->Form->input("Perms." . str_replace("/", ":", $action) . ".{$aroAlias}:{$aro[$aroAlias]['id']}", array(
+				'options' => array(
+				     'inherit' => __('Inherit'),
+				     'allow' => __('Allow'),
+				     'deny' => __('Deny')
+				),
+				'empty' => __('No change'),
+				'value' => $value,
+				'div' => false,
+				'label' => false,
+				'wrapInput' => false,
+				'class' => 'input-sm'
+			)); ?>
+		</td>
 	<?php endforeach; ?>
 <?php 
 	$lastIdent = $ident;
@@ -46,14 +80,25 @@ for ($i = 0; $i <= $lastIdent; $i++) {
 }
 ?></table>
 <?php
-echo $this->Form->end(__("Save"));
+echo $this->Form->submit(__("Save"), array('class' => 'btn btn-primary'));
+echo $this->Form->end(null);
 ?>
-<p><?php echo $this->Paginator->counter(array('format' => __('Page %page% of %pages%, showing %current% records out of %count% total, starting on record %start%, ending on %end%'))); ?></p>
-<div class="paging">
-	<?php echo $this->Paginator->prev('<< ' . __('previous'), array(), null, array('class'=>'disabled'));?>
- | <?php echo $this->Paginator->numbers();?> |
-	<?php echo $this->Paginator->next(__('next') . ' >>', array(), null, array('class' => 'disabled'));?>
-</div>
+
+<?php echo $this->Paginator->pagination(array(
+     'modulus' => '4',
+     'first_title' => '«',
+     'last_title' => '»',
+     'prev_title' => '‹ prev',
+     'next_title' => 'next ›',
+     'ul' => 'pagination pagination-sm pull-right',
+));?>
+
+<p class="pagination pull-right text-right">
+     <?php echo $this->Paginator->counter(
+          '{:count} results, showing {:start} - {:end}'
+     );?> &nbsp;
+</p>
+
 </div>
 <div class="actions">
 	<h3><?php echo __('Manage for'); ?></h3>
@@ -75,3 +120,25 @@ echo $this->Form->end(__("Save"));
 		<li><?php echo $this->Html->link(__('Drop permissions'), array('action' => 'drop_perms'), array(), __("Do you want to drop all the permissions?")); ?></li>
 	</ul>
 </div>
+
+<?php
+	$params = array(
+		'prefix' => $this->params['prefix'],
+		'plugin' => $this->params['plugin'],
+		'controller' => $this->params['controller'],
+		'action' => $this->params['action']
+	);
+?>
+
+<script type="text/javascript">
+//<![CDATA[
+jQuery(document).ready(function($){
+	$("#AroSelector").on('change', function(){
+		var page = $(this).val();
+		if (page!=="") {
+			location.href = "<?php echo $this->Html->url($params);?>/page:" + (parseInt(page)+1);
+		}
+	});
+});
+//]]>
+</script>
