@@ -7,9 +7,5 @@
 	"require": {
 		"php": ">=5.2.8",
 		"composer/installers": "*"
-	},
-	"repositories": {
-		"type": "vcs",
-		"url": "https://github.com/houseoftech/AclManager.git"
 	}
 }
