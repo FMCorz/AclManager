@@ -78,7 +78,7 @@ Download the stable branch (https://github.com/FMCorz/AclManager/archive/stable.
 #### With Composer
 
 1. [Install composer](http://getcomposer.org/doc/00-intro.md#locally) in the `app/` folder of your project.
-2. Add `"fmcorz/acl-manager": "stable"` to your `require` key in your `composer.json` file. ([More about this](http://getcomposer.org/doc/01-basic-usage.md#the-require-key))
+2. Add `"houseoftech/acl-manager": "stable"` to your `require` key in your `composer.json` file. ([More about this](http://getcomposer.org/doc/01-basic-usage.md#the-require-key))
 3. Run `php composer.phar install` to install the plugin.
 
 [Composer documentation](http://getcomposer.org/doc/)
