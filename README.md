@@ -73,12 +73,12 @@ function isAuthorized($user) {
 
 #### Manually
 
-Download the stable branch (https://github.com/FMCorz/AclManager/archive/stable.zip) and paste the content in your `app/Plugin/` directory.
+Download the stable branch (https://github.com/houseoftech/cakephp-acl-manager/archive/stable.zip) and paste the content in your `app/Plugin/` directory.
 
 #### With Composer
 
 1. [Install composer](http://getcomposer.org/doc/00-intro.md#locally) in the `app/` folder of your project.
-2. Add `"houseoftech/acl-manager": "stable"` to your `require` key in your `composer.json` file. ([More about this](http://getcomposer.org/doc/01-basic-usage.md#the-require-key))
+2. Add `"houseoftech/cakephp-acl-manager": "stable"` to your `require` key in your `composer.json` file. ([More about this](http://getcomposer.org/doc/01-basic-usage.md#the-require-key))
 3. Run `php composer.phar install` to install the plugin.
 
 [Composer documentation](http://getcomposer.org/doc/)
