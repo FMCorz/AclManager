@@ -119,7 +119,31 @@ class AclController extends AclManagerAppController {
 		 */
 		$acos = Cache::read('acos', Configure::read('AclManager.cacheConfig'));
 		if (!$acos) {
-			$acos = $this->Acl->Aco->find('all', array('order' => 'Aco.lft ASC', 'recursive' => 1));
+			$aroRecords = $this->Acl->Aro->find('all', array(
+				'conditions' => array(
+					'Aro.model' => $model,
+					'Aro.foreign_key' => Hash::extract($aros, '{n}.{s}.id')
+				),
+				'recursive' => -1
+			));
+			$aroIds = implode(',', Hash::extract($aroRecords, '{n}.Aro.id'));
+
+			$acos = $this->Acl->Aco->query(
+				"SELECT * FROM acos as Aco
+					LEFT JOIN aros_acos as Permission on Permission.aco_id = Aco.id AND
+						Permission.aro_id IN({$aroIds})
+					ORDER BY Aco.lft ASC
+				"
+			);
+			foreach($acos as $key => $row) {
+				$extractedAros = Hash::extract($aroRecords, '{n}.Aro');
+				if (count($aroRecords) == 1) {
+					$acos[$key]['Aro'] = array_shift($extractedAros);
+				} else {
+					$acos[$key]['Aro'] = $extractedAros;
+				}
+			}
+
 			Cache::write('acos', $acos, Configure::read('AclManager.cacheConfig'));
 		}
 		$this->acos = $acos;
@@ -159,10 +183,9 @@ class AclController extends AclManagerAppController {
 	/**
 	 * Recursive function to find permissions avoiding slow $this->Acl->check().
 	 */
-	private function _evaluate_permissions($permKeys, $aro, $aco, $aco_index) { 
-		$permissions = Set::extract("/Aro[model={$aro['alias']}][foreign_key={$aro['id']}]/Permission/.", $aco);
-		$permissions = array_shift($permissions);		
-		
+	private function _evaluate_permissions($permKeys, $aro, $aco, $aco_index) {
+		$permissions = $aco['Permission'];
+
 		$allowed = false;
 		$inherited = false;
 		$inheritedPerms = array();
