@@ -151,7 +151,6 @@ class AclController extends AclManagerAppController {
 		$parents = array();
 		foreach ($acos as $key => $data) {
 			$aco =& $acos[$key];
-			$aco = array('Aco' => $data['Aco'], 'Aro' => $data['Aro'], 'Action' => array());
 			$id = $aco['Aco']['id'];
 			
 			// Generate path
