@@ -46,15 +46,10 @@ $config['AclManager'] = array(
 	'ignoreActions' => array('isAuthorized'),
 	
 	/**
-	 * Cache configuration to use for caching ACOs
-	 */
-	'cacheConfig' => 'default',
-	
-	/**
 	 * List of ARO models to load
 	 * Use only if AclManager.aros aliases are different from model name
 	 */
 	// 'models' => array('Group', 'Customer'),
 	
-	'version' => "1.2.5"
+	'version' => "1.3.1"
 );

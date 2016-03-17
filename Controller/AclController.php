@@ -99,9 +99,6 @@ class AclController extends AclManagerAppController {
 					}
 				}
 			}
-
-			// remove cached acos file when updating permissions
-			Cache::delete('acos', Configure::read('AclManager.cacheConfig'));
 		}
 
 		$model = isset($this->request->params['named']['aro']) ? $this->request->params['named']['aro'] : null;
@@ -117,35 +114,31 @@ class AclController extends AclManagerAppController {
 		/**
 		 * Build permissions info
 		 */
-		$acos = Cache::read('acos', Configure::read('AclManager.cacheConfig'));
-		if (!$acos) {
-			$aroRecords = $this->Acl->Aro->find('all', array(
-				'conditions' => array(
-					'Aro.model' => $model,
-					'Aro.foreign_key' => Hash::extract($aros, '{n}.{s}.id')
-				),
-				'recursive' => -1
-			));
-			$aroIds = implode(',', Hash::extract($aroRecords, '{n}.Aro.id'));
-
-			$acos = $this->Acl->Aco->query(
-				"SELECT * FROM acos as Aco
-					LEFT JOIN aros_acos as Permission on Permission.aco_id = Aco.id AND
-						Permission.aro_id IN({$aroIds})
-					ORDER BY Aco.lft ASC
-				"
-			);
-			foreach($acos as $key => $row) {
-				$extractedAros = Hash::extract($aroRecords, '{n}.Aro');
-				if (count($aroRecords) == 1) {
-					$acos[$key]['Aro'] = array_shift($extractedAros);
-				} else {
-					$acos[$key]['Aro'] = $extractedAros;
-				}
+		$aroRecords = $this->Acl->Aro->find('all', array(
+ 			'conditions' => array(
+ 				'Aro.model' => $model,
+ 				'Aro.foreign_key' => Hash::extract($aros, '{n}.{s}.id')
+ 			),
+ 			'recursive' => -1
+ 		));
+ 		$aroIds = implode(',', Hash::extract($aroRecords, '{n}.Aro.id'));
+		$acos = $this->Acl->Aco->query(
+			"SELECT * FROM acos as Aco
+				LEFT JOIN aros_acos as Permission on Permission.aco_id = Aco.id AND
+					Permission.aro_id IN({$aroIds})
+				ORDER BY Aco.lft ASC
+			"
+		);
+		// add Aro key along side each Aco
+		foreach($acos as $key => $row) {
+			$extractedAros = Hash::extract($aroRecords, '{n}.Aro');
+			if (count($aroRecords) == 1) {
+				$acos[$key]['Aro'] = array_shift($extractedAros);
+			} else {
+				$acos[$key]['Aro'] = $extractedAros;
 			}
-
-			Cache::write('acos', $acos, Configure::read('AclManager.cacheConfig'));
 		}
+		
 		$this->acos = $acos;
 		$perms = array();
 		$parents = array();
@@ -323,9 +316,6 @@ class AclController extends AclManagerAppController {
 			$acoIds = Set::extract('/Aco/id', $knownAcos);
 			$this->Acl->Aco->deleteAll(array('Aco.id' => $acoIds));
 		}
-
-		// remove cached acos file when updating ACOs
-		Cache::delete('acos', Configure::read('AclManager.cacheConfig'));
 
 		$this->Session->setFlash(sprintf(__("%d ACOs have been created/updated"), $count));
 		$this->redirect($this->request->referer());
