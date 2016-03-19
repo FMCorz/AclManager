@@ -528,6 +528,25 @@ class AclController extends AclManagerAppController {
 
 		// Getting Plugins controllers
 		$plugins = CakePlugin::loaded();
+    
+		// remove ignored plugins
+		$ignore = Configure::read('AclManager.ignoreActions');
+		$ignoredPlugins = $ignoredControllers = array();
+		foreach($ignore as $path) {
+			if (stristr($path, '.*')) {
+				list($plugin, $controllerAction) = pluginSplit($path);
+				$ignoredPlugins[] = $plugin;
+			} elseif (stristr($path, '/*')) {
+				list($plugin, $controller) = pluginSplit($path);
+				if ($plugin == '') {
+					$plugin = 'Cake';
+				}
+				$controller = str_ireplace('/*', '', $controller);
+				$ignoredControllers[$plugin][] = $controller;
+			}
+		}
+		$plugins = array_diff($plugins, $ignoredPlugins);
+    
 		foreach ($plugins as $plugin) {
 			$objects[$plugin] = App::objects($plugin . '.Controller');
 			$unsetIndex = array_search($plugin . "AppController", $objects[$plugin]);
@@ -541,6 +560,9 @@ class AclController extends AclManagerAppController {
 		foreach ($objects as $plugin => $controllers) {
 			$controllers = str_replace("Controller", "", $controllers);
 			foreach ($controllers as $controller) {
+				if (isset($ignoredControllers[$plugin]) && in_array($controller, $ignoredControllers[$plugin])) {
+					continue;
+				}
 				if ($plugin !== "Cake") {
 					$controller = $plugin . "." . $controller;
 				}
