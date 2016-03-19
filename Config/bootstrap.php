@@ -13,55 +13,20 @@
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
 
-/**
- * List of AROs (Class aliases)
- * Order is important! Parent to Children
- */
-Configure::write('AclManager.aros', array('Role', 'User'));
+// Default to Plugin config which can be overwritten by local app config
+Configure::load('AclManager.acl_manager');
+$defaultConfig = Configure::read('AclManager');
 
-/**
- * Limit used to paginate AROs
- * Replace {alias} with ARO alias
- * Configure::write('AclManager.{alias}.limit', 3)
- */
-// Configure::write('AclManager.Role.limit', 3);
-
-/**
- * Routing Prefix
- * Set the prefix you would like to restrict the plugin to
- * @see Configure::read('Routing.prefixes')
- */
-// Configure::write('AclManager.prefix', 'admin');
-
-/**
- * Ugly identation?
- * Turn off when using CSS
- */
-Configure::write('AclManager.uglyIdent', true);
-				
-/**
- * Actions to ignore when looking for new ACOs
- * Format: 'action', 'Controller/action' or 'Plugin.Controller/action'
- */
-Configure::write('AclManager.ignoreActions', array('isAuthorized'));
-
-/**
- * List of ARO models to load
- * Use only if AclManager.aros aliases are different than model name
- */
-// Configure::write('AclManager.models', array('Group', 'Customer'));
-
-/**
- * END OF USER SETTINGS
- */
-
-Configure::write("AclManager.version", "1.2.5");
-if (!is_array(Configure::read('AclManager.aros'))) {
-	Configure::write('AclManager.aros', array(Configure::read('AclManager.aros')));
+$config = array();
+// Local app config
+if (file_exists(APP . 'Config' . DS . 'acl_manager.php')) {
+	Configure::load('acl_manager', 'default', false);
+	$config = Configure::read('AclManager');
 }
-if (!is_array(Configure::read('AclManager.ignoreActions'))) {
-	Configure::write('AclManager.ignoreActions', array(Configure::read('AclManager.ignoreActions')));
-}
+
+$config = array_merge($defaultConfig, $config);
+Configure::write('AclManager', $config);
+
 if (!Configure::read('AclManager.models')) {
 	Configure::write('AclManager.models', Configure::read('AclManager.aros'));
 }
